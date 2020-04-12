@@ -19,8 +19,8 @@ end
 c = 299792458;
 freq1 = 1575.42E6;
 freq2 = 1227.60E6;
-waveLength1 = c / pi / freq1;
-waveLength2 = c / pi / freq2;
+waveLength1 = c / freq1;
+waveLength2 = c / freq2;
 coef = 1 / 40.308 * freq1^2 * freq2^2 / (freq1^2 - freq2^2);
 Re = 6371;
 H = 450;
@@ -103,8 +103,8 @@ for i = 1 : sizeOfData
 
     tec_f = coef * (OD(i, 9 + 3*(index_L1 - 1))...
         * waveLength1 - OD(i, 9 + 3*(index_L2 - 1)) * waveLength2) / 1E16;
-    tec_p = coef * (OD(i, 9 + 3*(index_C1 - 1))...
-        - OD(i, 9 + 3*(index_C2 - 1))) / 1E16;
+    tec_p = coef * (OD(i, 9 + 3*(index_C2 - 1))...
+        - OD(i, 9 + 3*(index_C1 - 1))) / 1E16;
     
     if isnan(tec_f + tec_p)
         continue
@@ -232,7 +232,7 @@ for i = 1 : 32
 end
 
 save(['cells_', file], 'TEC_cell', 'TEC_cell_Description', 'base_position',...
-    'intervals');
+    'intervals', 'indexes_L1', 'indexes_L2','indexes_C1','indexes_C2');
 
 
 
