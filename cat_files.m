@@ -1,3 +1,4 @@
+% concat files into one 
 files = dir('mat_files');
 load([files(3).folder, '\', files(3).name], 'Matr_GPS', 'Param_GPS',...
     'Position_X', 'Position_Y', 'Position_Z');
