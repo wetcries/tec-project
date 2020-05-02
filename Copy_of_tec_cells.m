@@ -111,12 +111,12 @@ for i = 1 : sizeOfData
     end
 
     base_lla = ecef2lla(base_position);
-    wgs84 = wgs84Ellipsoid('kilometers');
+    wgs84 = wgs84Ellipsoid('meter');
     [az, elev_angle, ~] = ecef2aer(OD(i, 3), OD(i, 4), OD(i, 5),...
         base_lla(1), base_lla(2), base_lla(3), wgs84);
     elev_angle = elev_angle * pi / 180;
     az = az * pi / 180;
-    %to be continued...
+    
     if elev_angle < pi/6 || isnan(elev_angle)
         continue;
     end
@@ -222,7 +222,7 @@ for i = 1 : 32
         for n = intervals{i}(k, 1) : intervals{i}(k, 2)
             const = const + (TEC_cell{i}(n, 7) - TEC_cell{i}(n, 6));
         end
-        const = const / (intervals{i}(k, 2) - intervals{i}(k, 1) + 1);
+        const = const / (intervals{i}(k, 2) - intervals{i}(k, 1) + 1)
         
         for n = intervals{i}(k, 1) : intervals{i}(k, 2)
             TEC_cell{i}(n, 8) = TEC_cell{i}(n, 6) + const;

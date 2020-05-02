@@ -1,79 +1,85 @@
-% equations
-function slae(file, alpha)
+function slae(file, mode, period, window, alpha)
 load(file, 'TEC_cell', 'base_position');
-tic
-time_offset = false;
-min_time = zeros(32, 1);
-for i = 1 : 32 
-    if isempty(TEC_cell{i})
-        continue;
-    end
-    if TEC_cell{i}(1,1) < 0
-        time_offset = true;
-        min_time(i) = TEC_cell{i}(1,1);
-    end
-end
-
-if time_offset
-    offset = abs(min(min_time));
-else
-    offset = 0;
-end
-
-array_size = 0;
-for i = 1 : 32
-    if isempty(TEC_cell{i})
-        continue;
-    end
-    
-    array_size = array_size + size(TEC_cell{i}, 1);
-end
-
-period = 600; % period of time, when tec doesn't change 
-A = zeros(array_size, 32 + 7 * 86400 / period);
-y = zeros(array_size, 1);
-counter = 0;
-nop = 86400 / period; %nop - number of periods
-
-coef = 6371 / (6371 + 450);
+sizeOfData = 0;
 
 for i = 1 : 32
     if isempty(TEC_cell{i})
-        continue;
+        continue
     end
     
     for k = 1 : size(TEC_cell{i}, 1)
-        counter = counter + 1;
-        time = TEC_cell{i}(k, 1) + offset;
-        
-        % index of time period 
-        index = int64(floor(time / period)) + 1;
-        
-        tetha = TEC_cell{i}(k, 2);
-        S = 1/(cos(asin(coef*sin(alpha*(pi/2 - tetha)))));
-        ion_position = [TEC_cell{i}(k, 3),...
-            TEC_cell{i}(k, 4),...
-            TEC_cell{i}(k, 5)];
-        delta = ecef2lla(ion_position) - ecef2lla(base_position);
-
-        A(counter, 1 + (index - 1) * 7) = S;
-        A(counter, 2 + (index - 1) * 7) = S * delta(1);
-        A(counter, 3 + (index - 1) * 7) = S * delta(1)^2;
-        A(counter, 4 + (index - 1) * 7) = S * delta(2);
-        A(counter, 5 + (index - 1) * 7) = S * delta(2)^2;
-        A(counter, 6 + (index - 1) * 7) =...
-            S * (time - (index - 0.5) * period);
-        A(counter, 7 + (index - 1) * 7) =...
-            S * (time - (index - 0.5) * period)^2;
-        A(counter, end + i - 32) = 1;
-
-        y(counter) = TEC_cell{i}(k, 8);
+        time = TEC_cell{i}(k, 1);
+        index = round(time / period);
+        if abs(time - round(time / period) * period) <= window &&...
+                index ~= 0 &&...
+                index ~= 86400 / period 
+            sizeOfData = sizeOfData + 1;
+        end
     end
 end
-S = sparse(A);
-toc
-fprintf('completed: alpha = %d\n', alpha);
-save(['slae_', num2str(alpha), '.mat'], 'S', 'y');
 
+A = zeros(sizeOfData, 32 + (86400 / period - 1) * (mode * 3 + 1));
+B = zeros(sizeOfData, 1);
+E = wgs84Ellipsoid;
+RE = E.SemiminorAxis;
+H = 450000;
+baseLLA = ecef2lla(base_position, 'WGS84');
+latBase = baseLLA(1);
+lonBase = baseLLA(2);
+coef = RE / (RE + H);
+counter = 0;
 
+for i = 1 : 32
+    if isempty(TEC_cell{i})
+        continue
+    end
+    
+    for k = 1 : size(TEC_cell{i}, 1)
+        time = TEC_cell{i}(k, 1);
+        index = round(time / period);
         
+        if abs(time - index * period) > window ||...
+                index == 0 || index == 86400 / period
+            continue
+        end
+        
+        counter = counter + 1;
+        angle = TEC_cell{i}(k, 2);
+        s = 1 / (cos(asin(coef * sin(alpha * (pi / 2 - angle)))));
+        lat = TEC_cell{i}(k, 3);
+        lon = TEC_cell{i}(k, 4);
+        deltaLat = lat - latBase;
+        deltaLon = lon - lonBase;
+        deltaTime = time - index * period;
+        
+        
+        A(counter, 1 + (index - 1) * (mode * 3 + 1)) = s;
+        
+        if mode == 1 || mode == 2
+            A(counter, 2 + (index - 1) * (mode * 3 + 1)) =...
+                s * deltaLat;
+            A(counter, 3 + (index - 1) * (mode * 3 + 1)) =...
+                s * deltaLon;
+            A(counter, 4 + (index - 1) * (mode * 3 + 1)) =...
+                s * deltaTime;
+        end
+        
+        if mode == 2
+            A(counter, 5 + (index - 1) * (mode * 3 + 1)) =...
+                s * deltaLat ^ 2;
+            A(counter, 6 + (index - 1) * (mode * 3 + 1)) =...
+                s * deltaLon ^ 2;
+            A(counter, 7 + (index - 1) * (mode * 3 + 1)) =...
+                s * deltaTime ^ 2;
+        end
+        
+        A(counter, end - 32 + i) = 1;
+        B(counter, 1) = TEC_cell{i}(k, 8);
+    end
+end
+
+S = sparse(A);
+x = S \ B;
+save(['slae_', file(7 : end)], 'S', 'x', 'B', 'mode');
+end
+
