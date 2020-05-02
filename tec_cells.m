@@ -1,5 +1,5 @@
 % processing of tec from DATA mat file
-function Copy_of_tec_cells(file)
+function tec_cells(file)
 %%
 
 load(file, 'ObservationDataGPS', 'ObservTypes', 'Position_X',...
@@ -231,8 +231,8 @@ for i = 1 : 32
     end
 end
 
-save(['cells_', file], 'TEC_cell', 'TEC_cell_Description', 'base_position',...
-    'intervals', 'indexes_L1', 'indexes_L2','indexes_C1','indexes_C2');
+save(['cell_', file], 'TEC_cell', 'TEC_cell_Description', 'base_position',...
+    'intervals');
 
 
 

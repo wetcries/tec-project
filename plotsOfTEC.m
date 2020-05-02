@@ -1,15 +1,10 @@
-%%
+load('slae_p0592530.mat');
+tec = x(1 : mode * 3 + 1 :end - 32);
+period = 86400 / (size(tec, 1) + 1);
+time = period : period : 86400 - period;
+time = time / 3600;
+
 figure;
-hold on;
-for i = 1 : 1
-    if isempty(TEC_cell{i})
-        continue;
-    end
-    
-    for k = 1 : size(intervals{i}, 1)
-        start = intervals{i}(k, 1);
-        eend = intervals{i}(k, 2);
-        plot(TEC_cell{i}(start : eend, 1),...
-            TEC_cell{i}(start : eend, 8));
-    end
-end
+plot(time, tec);
+axis([0, 24, 0, max(tec) + 1]);
+xticks(0:24);
