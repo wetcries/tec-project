@@ -1,68 +1,54 @@
-%%
-files = dir;
-matFiles = cell(0, 1);
-for i = 1 : size(files)
-    if contains(files(i).name, '.mat')
-        matFiles{end + 1, 1} = i;
-    end
+file = 'kos12490.mat';
+load(['slae_2_', file]);
+load(file, 'year', 'month', 'day');
+load(['cell_', file], 'base_position');
+tec0 = x(1 : mode * 3 + 1 :end - 32);
+timeDerivative = x(4 : mode * 3 + 1 : end - 32);
+time0 = period : period : 86400 - period;
+
+sunElevation = zeros(size(time0, 2), 1);
+lla = ecef2lla(base_position, 'WGS84');
+UTC = cell(numel(sunElevation), 1);
+
+for i = 1 : numel(sunElevation)
+    hour = floor(time0(i) / 3600);
+    minute = floor((time0(i) - hour * 3600) / 60);
+    second = time0(i) - hour * 3600 - minute * 60;
+    dataNumber = datenum([year, month, day, hour, minute, second]);
+    UTC{i} = datestr(dataNumber,'yyyy/mm/dd HH:MM:SS');
+    [~, sunElevation(i)] = SolarAzEl(UTC{i}, lla(1), lla(2), lla(3));
 end
 
-for i = 1 : size(matFiles, 1)
-    Copy_of_tec_cells(files(matFiles{i}).name);
-end
-%%
-files = dir;
-cellsFiles = cell(0, 1);
-for i = 1 : size(files)
-    if contains(files(i).name, 'cells') && contains(files(i).name, '.mat')
-        cellsFiles{end + 1, 1} = i;
-    end
-end
 
-for i = 1 : size(cellsFiles, 1)
-    new_slae(files(cellsFiles{i}).name, 0.87);
-end
-%%
-files = dir;
-slaeFiles = cell(0, 1);
-for i = 1 : size(files)
-    if contains(files(i).name, 'slae') && contains(files(i).name, '.mat')
-        slaeFiles{end + 1, 1} = i;
-    end
-end
+time0 = period : period : 86400 - period;
+time0 = time0 / 3600;
+date = datestr(datenum([year, month, day]), 'mmmm-dd-yyyy');
+figure(1);
+grid on;
 
-bias = cell(size(slaeFiles, 1), 2);
-tec = cell(size(slaeFiles, 1), 2);
+yyaxis left;
+plot(time0, tec0);
+title({'TEC and Solar elevation angle during the day',...
+    ['(', date, ', location: ', num2str(lla(1)), ', ',num2str(lla(2)), ')']});
+xlabel('UTC time, hours');
+ylabel('TECU');
+xlim([0, 24]);
+xticks(0:24);
 
-for i = 1 : size(bias, 1)
-    roots(files(slaeFiles{i}).name);
-    load(files(slaeFiles{i}).name, 'x');
-    bias{i, 1} = files(slaeFiles{i}).name(6 : 9);
-    bias{i, 2} = x(end - 31 : end);
-    bias{i, 2} = bias{i, 2} - mean(bias{i, 2});
-    
-    tec{i, 1} = files(slaeFiles{i}).name(6 : 9);
-    tec{i, 2} = zeros((size(x, 1) - 32) / 7, 1);
-    for k = 1 : size(tec{i, 2}, 1)
-        tec{i, 2}(k) = x((k - 1) * 7 + 1);
-    end
-    clear 'x';
-end
+yyaxis right;
+plot(time0, sunElevation);
+ylabel('Elevation angle, degrees');
 
-%%
-figure;
+
+figure(2);
 hold on;
-for i = 1 : size(bias, 1)
-    plot(bias{i, 2});
-end
-title('BIAS');
-legend(bias{:, 1});
+yyaxis left;
+plot(time0, timeDerivative);
+xlim([0, 24]);
+xticks(0 : 24);
 
-%%
-figure;
-hold on;
-for i = 1 : size(tec, 1) - 1
-    plot(tec{i, 2});
-end
-title('TEC');
-legend(tec{1:3, 1});
+yyaxis right;
+plot(time0, tec0);
+
+clear
+

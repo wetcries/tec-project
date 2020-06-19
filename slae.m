@@ -1,4 +1,5 @@
 function slae(file, mode, period, window, alpha)
+tic
 load(file, 'TEC_cell', 'base_position');
 sizeOfData = 0;
 
@@ -80,6 +81,19 @@ end
 
 S = sparse(A);
 x = S \ B;
-save(['slae_', file(7 : end)], 'S', 'x', 'B', 'mode');
+toc
+
+[filepath, name, ext] = fileparts(file);
+
+if isempty(B)
+    fprintf('Is empty: %s\n', name);
+else
+    save([filepath(1 : end - 4),'\slae\slae_', int2str(mode), '_',...
+        name(6 : end), ext], 'S', 'x', 'B', 'mode', 'period');
+    fprintf('Completed: %s\n', name);
+%     save(['slae_', int2str(mode), '_',...
+%         file], 'S', 'x', 'B', 'mode', 'period');
+%     fprintf('Completed: %s\n', file);
+end
 end
 

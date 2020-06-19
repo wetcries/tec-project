@@ -1,5 +1,5 @@
 %% read from rinex
-files = dir('C:\Users\meDaddy\Documents\MATLAB\sopac');
+files = dir('C:\Users\meDaddy\Documents\MATLAB\sopac\');
 rinexFiles = cell(0, 1);
 
 for i = 1 : size(files, 1)
@@ -9,8 +9,12 @@ for i = 1 : size(files, 1)
 end
 
 for i = 1 : size(rinexFiles, 1)
+    try
     rinexToMat2_1([files(rinexFiles{i}).folder,...
         '\', files(rinexFiles{i}).name]);
+    catch
+        fprintf('Error: %s\n', files(rinexFiles{i}).name);
+    end
 end
 
 clear

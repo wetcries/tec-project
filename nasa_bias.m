@@ -1,4 +1,4 @@
-path = 'C:\Users\meDaddy\Documents\MATLAB\2020\bias\CAS0MGXRAP_20172500000_01D_01D_DCB.BSX';
+path = 'C:\Users\meDaddy\Documents\MATLAB\tec-project\bias\CAS0MGXRAP_20172530000_01D_01D_DCB.BSX';
 fd =fopen(path, 'r');
 while true
     line = fgetl(fd);

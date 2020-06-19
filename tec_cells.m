@@ -1,7 +1,7 @@
 % processing of tec from DATA mat file
 function tec_cells(file)
 %%
-
+tic
 load(file, 'ObservationDataGPS', 'ObservTypes', 'Position_X',...
     'Position_Y', 'Position_Z');
 base_position = [Position_X, Position_Y, Position_Z];
@@ -222,7 +222,7 @@ for i = 1 : 32
         for n = intervals{i}(k, 1) : intervals{i}(k, 2)
             const = const + (TEC_cell{i}(n, 7) - TEC_cell{i}(n, 6));
         end
-        const = const / (intervals{i}(k, 2) - intervals{i}(k, 1) + 1)
+        const = const / (intervals{i}(k, 2) - intervals{i}(k, 1) + 1);
         
         for n = intervals{i}(k, 1) : intervals{i}(k, 2)
             TEC_cell{i}(n, 8) = TEC_cell{i}(n, 6) + const;
@@ -230,10 +230,17 @@ for i = 1 : 32
         
     end
 end
+toc
 
-save(['cell_', file], 'TEC_cell', 'TEC_cell_Description', 'base_position',...
+[filepath, name, ext] = fileparts(file);
+fprinf('completed: %s\n', name);
+save([filepath(1 : end - 3), '\cell\', 'cell_', name, ext],...
+    'TEC_cell', 'TEC_cell_Description', 'base_position',...
     'intervals');
 
+% save(['cell_', file],...
+%     'TEC_cell', 'TEC_cell_Description', 'base_position',...
+%     'intervals');
 
 
 
