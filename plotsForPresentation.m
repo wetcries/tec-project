@@ -17,7 +17,9 @@ xlim([0, 24]);
 xticks(0 : 24);
 
 legend('Полученное значение TEC для станции dent', 'Данные MADRIGAL',...
-    'FontSize', 12);
+    'FontSize', 12, 'Location', 'southeast');
+printpreview;
+print('pics/tec_madrigal', '-dpng', '-r600');
 
 %%
 figure;
@@ -38,5 +40,7 @@ ylabel('Угол элевации в градусах', 'FontSize', 14);
 xlabel('Время UTC', 'FontSize', 14);
 xlim([0, 24]);
 xticks(0 : 24);
+printpreview;
+print('pics/tec_sun', '-dpng', '-r600');
 
 %%

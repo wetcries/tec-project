@@ -1,5 +1,5 @@
 folder = 'C:\Users\meDaddy\Documents\MATLAB\tec-project';
-%%
+
 files = dir([folder, '\mat']);
 stations = cell(0, 1);
 
@@ -38,7 +38,14 @@ end
 
 allStations = cell(0, 1);
 bullshit = {'tuc2'; 'man2'; 'igeo';...
-    'bell'; 'axpv'};
+    'bell'; 'axpv'; 'bcln'; 'ildx'; 'foyl';...
+    'enis'; 'pasa'; 'alac'; 'cant'; 'alba';...
+    'vala'; 'alme'; 'leon'; 'mala'; 'cace';...
+    'ceu1'; 'tari'; 'vigo'; 'gaia'; 'huel';...
+    'lago'; 'casc'; 'joen'; 'vaas'; 'ctab';...
+    'bolg'; 'kunz'; 'noa1'; 'lliv'; 'msel';...
+    'creu'; 'ware'; 'crei'; 'pore'; 'cpar';...
+    'ucag'};
 
 for k = 1 : size(stations, 1)
     name = stations{k};
@@ -102,4 +109,5 @@ for k = 1 : size(stations, 1)
     allStations{end + 1, 1} = stations{k};
 
 end
+save('allStation.mat', 'allStations');
 clearvars -except allStations
